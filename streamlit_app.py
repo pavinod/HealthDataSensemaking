@@ -6,3 +6,8 @@ st.write(
     "Let's start building! For help and inspiration, head over to [docs.streamlit.io](https://docs.streamlit.io/)."
 )
 st.write("Have a nice day Ali!")
+
+st.subheader('Slider')
+
+age = st.slider('How old are you?', 0,130,25)
+st.write("I'm", age, 'years old')
