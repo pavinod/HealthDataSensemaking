@@ -3,8 +3,6 @@ from datetime import time, datetime
 
 st.set_page_config(page_title = "Data Sensemaking Practice")
 st.title("I will complete by PhD successfully by September 2025")
-st.caption("🎈 My new app")
-
 
 
 # st.write(
@@ -55,7 +53,7 @@ position: fixed;
 left: 0;
 bottom: 0;
 width: 100%;
-background-color: white;
+background-color: gray;
 color: black;
 text-align: center;
 }
