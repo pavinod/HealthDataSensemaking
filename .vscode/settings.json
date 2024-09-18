@@ -1,0 +1,5 @@
+{
+    "git.showInlineOpenFileAction": false,
+    "git.rememberPostCommitCommand": false,
+    "git.postCommitCommand": "sync"
+}
