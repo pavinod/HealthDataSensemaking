@@ -6,14 +6,19 @@ import numpy as np
 st.set_page_config(page_title = "Data Sensemaking Practice")
 st.title("I will complete by PhD successfully by September 2025")
 
-st.header('Line chart')
+st.header('st.selectbox')
+option = st.selectbox('what is your favourite color?', ("blue","green","red",))
+st.write('Your favourite color is ',option)
 
-chart_data = pd.DataFrame(
-    np.random.randn(20,3),
-    columns = ['a','b','c']
-)
 
-st.line_chart(chart_data)
+# st.header('Line chart')
+
+# chart_data = pd.DataFrame(
+#     np.random.randn(20,3),
+#     columns = ['a','b','c']
+# )
+
+# st.line_chart(chart_data)
 
 # st.write(
 #     "Let's start building! For help and inspiration, head over to [docs.streamlit.io](https://docs.streamlit.io/)."
