@@ -1,27 +1,36 @@
 import streamlit as st
 from datetime import time, datetime
 import pandas as pd
+import pandas_profiling
 import numpy as np
+from streamlit_pandas_profiling import st_profile_report
 
 #https://pavithren.streamlit.app/
+#stenv miniconda3 3e.9.19
 
+
+st.header('`streamlit_pandas_profiling')
+
+df = pd.read_csv('https://raw.githubusercontent.com/dataprofessor/data/master/penguins_cleaned.csv')
+pr = df.profile_report()
+st_profile_report(pr)
 
 #day 12
 
-st.header('st.checkbox')
+# st.header('st.checkbox')
 
-st.write('What would you like to order?')
+# st.write('What would you like to order?')
 
-icecream = st.checkbox ('Ice cream')
-coffee = st.checkbox ('Coffeeeeee')
-cola = st.checkbox ('Cola')
+# icecream = st.checkbox ('Ice cream')
+# coffee = st.checkbox ('Coffeeeeee')
+# cola = st.checkbox ('Cola')
 
-if icecream:
-    st.write("Great! Here's some more 🍦")
-if coffee:
-    st.write("Okay, here's some coffee ☕")
-if cola:
-    st.write("Here you go 🥤")
+# if icecream:
+#     st.write("Great! Here's some more 🍦")
+# if coffee:
+#     st.write("Okay, here's some coffee ☕")
+# if cola:
+#     st.write("Here you go 🥤")
 
 
 #Day 11
