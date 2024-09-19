@@ -21,7 +21,7 @@ if icecream:
 if coffee:
     st.write("Okay, here's some coffee ☕")
 if cola:
-    st.write("Here you 🥤")
+    st.write("Here you go 🥤")
 
 
 #Day 11
