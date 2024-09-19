@@ -1,8 +1,8 @@
 import streamlit as st
 from datetime import time, datetime
 import pandas as pd
-import pandas_profiling
-from streamlit_pandas_profiling import st_profile_report
+import ydata_profiling
+from ydata_profiling import ProfileReport
 import numpy as np
 
 #https://pavithren.streamlit.app/
