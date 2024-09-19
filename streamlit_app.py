@@ -8,20 +8,25 @@ import numpy as np
 #https://pavithren.streamlit.app/
 #stenv miniconda3 3e.9.19
 
-st.set_page_config(page_title = "Data Sensemaking Practice")
-st.title("I will complete by PhD successfully by September 2025")
+#day 17
+st.title('Secret')
+st.write(st.secrets['my name is pavithren'])
 
-st.code("""  
-[theme]
-primaryColor="#F39C12"
-backgroundColor="#2E86C1"
-secondaryBackgroundColor="#AED6F1"
-textColor="#FFFFFF"
-font="monospace"
-""")
+#day 16
+# st.set_page_config(page_title = "Data Sensemaking Practice")
+# st.title("I will complete by PhD successfully by September 2025")
 
-number = st.sidebar.slider("Select a number:", 0,10 , 5)
-st.write('Selected number from slider widget is:', number)
+# st.code("""  
+# [theme]
+# primaryColor="#F39C12"
+# backgroundColor="#2E86C1"
+# secondaryBackgroundColor="#AED6F1"
+# textColor="#FFFFFF"
+# font="monospace"
+# """)
+
+# number = st.sidebar.slider("Select a number:", 0,10 , 5)
+# st.write('Selected number from slider widget is:', number)
 
 
 #day 14 issues with ydata/pandaprofiling: https://discuss.streamlit.io/t/pydantic-import-error-for-an-old-repo/61580/2
