@@ -3,12 +3,20 @@ from datetime import time, datetime
 import pandas as pd
 import numpy as np
 
+#https://pavithren.streamlit.app/
+
 st.set_page_config(page_title = "Data Sensemaking Practice")
 st.title("I will complete by PhD successfully by September 2025")
 
-st.header('st.selectbox')
-option = st.selectbox('what is your favourite color?', ("blue","green","red",))
-st.write('Your favourite color is ',option)
+st.header('st.multiselect')
+
+options = st.multiselect('What are you favourite colors',['Green','Yellow','Red','Blue'],['Yellow','Red'])
+
+st.write('You selected:',options)
+
+# st.header('st.selectbox')
+# option = st.selectbox('what is your favourite color?', ("blue","green","red",))
+# st.write('Your favourite color is ',option)
 
 
 # st.header('Line chart')
