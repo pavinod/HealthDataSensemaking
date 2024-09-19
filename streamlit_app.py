@@ -2,8 +2,8 @@ import streamlit as st
 from datetime import time, datetime
 import pandas as pd
 import pandas_profiling
-import numpy as np
 from streamlit_pandas_profiling import st_profile_report
+import numpy as np
 
 #https://pavithren.streamlit.app/
 #stenv miniconda3 3e.9.19
