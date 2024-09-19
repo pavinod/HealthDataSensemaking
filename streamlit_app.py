@@ -8,12 +8,28 @@ import numpy as np
 #https://pavithren.streamlit.app/
 #stenv miniconda3 3e.9.19
 
+st.set_page_config(page_title = "Data Sensemaking Practice")
+st.title("I will complete by PhD successfully by September 2025")
 
-st.header('`streamlit_pandas_profiling')
+st.code("""  
+[theme]
+primaryColor="#F39C12"
+backgroundColor="#2E86C1"
+secondaryBackgroundColor="#AED6F1"
+textColor="#FFFFFF"
+font="monospace"
+""")
 
-df = pd.read_csv('https://raw.githubusercontent.com/dataprofessor/data/master/penguins_cleaned.csv')
-pr = df.profile_report()
-st_profile_report(pr)
+number = st.sidebar.slider("Select a number:", 0,10 , 5)
+st.write('Selected number from slider widget is:', number)
+
+
+#day 14 issues with ydata/pandaprofiling: https://discuss.streamlit.io/t/pydantic-import-error-for-an-old-repo/61580/2
+# st.header('`streamlit_pandas_profiling')
+
+# df = pd.read_csv('https://raw.githubusercontent.com/dataprofessor/data/master/penguins_cleaned.csv')
+# pr = df.profile_report()
+# st_profile_report(pr)
 
 #day 12
 
@@ -34,8 +50,7 @@ st_profile_report(pr)
 
 
 #Day 11
-# st.set_page_config(page_title = "Data Sensemaking Practice")
-# st.title("I will complete by PhD successfully by September 2025")
+
 
 # st.header('st.multiselect')
 
