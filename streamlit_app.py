@@ -10,7 +10,7 @@ import numpy as np
 
 #day 17
 st.title('Secret')
-st.write(st.secrets['my name is pavithren'])
+st.write(st.secrets['message'])
 
 #day 16
 # st.set_page_config(page_title = "Data Sensemaking Practice")
