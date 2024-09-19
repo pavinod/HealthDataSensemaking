@@ -5,15 +5,36 @@ import numpy as np
 
 #https://pavithren.streamlit.app/
 
-st.set_page_config(page_title = "Data Sensemaking Practice")
-st.title("I will complete by PhD successfully by September 2025")
 
-st.header('st.multiselect')
+#day 12
 
-options = st.multiselect('What are you favourite colors',['Green','Yellow','Red','Blue'],['Yellow','Red'])
+st.header('st.checkbox')
 
-st.write('You selected:',options)
+st.write('What would you like to order?')
 
+icecream = st.checkbox ('Ice cream')
+coffee = st.checkbox ('Coffee')
+cola = st.checkbox ('Cola')
+
+if icecream:
+    st.write("Great! Here's some more 🍦")
+if coffee:
+    st.write("Okay, here's some coffee ☕")
+if cola:
+    st.write("Here you 🥤")
+
+
+#Day 11
+# st.set_page_config(page_title = "Data Sensemaking Practice")
+# st.title("I will complete by PhD successfully by September 2025")
+
+# st.header('st.multiselect')
+
+# options = st.multiselect('What are you favourite colors',['Green','Yellow','Red','Blue'],['Yellow','Red'])
+
+# st.write('You selected:',options)
+
+#Day 10
 # st.header('st.selectbox')
 # option = st.selectbox('what is your favourite color?', ("blue","green","red",))
 # st.write('Your favourite color is ',option)
