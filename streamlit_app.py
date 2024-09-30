@@ -2,11 +2,6 @@ import streamlit as st
 import pydeck as pdk
 import pandas as pd
 import json
-from geopy.distance import geodesic
-import streamlit as st
-import pydeck as pdk
-import pandas as pd
-import json
 
 # Always prompt the user to upload a JSON file
 uploaded_file = st.file_uploader("Please upload a JSON file to proceed", type=["json"])
@@ -24,8 +19,8 @@ if uploaded_file is not None:
             end_time = obj['activitySegment']['duration']['endTimestamp']
             distance = obj['activitySegment']['distance'] if 'distance' in obj['activitySegment'] else 0
             for waypoint in obj['activitySegment']['waypointPath']['waypoints']:
-                lat = waypoint['latE7'] / 1e7
-                lng = waypoint['lngE7'] / 1e7
+                lat = waypoint['latE7'] / 1e7  # Convert to proper latitude
+                lng = waypoint['lngE7'] / 1e7  # Convert to proper longitude
                 waypoints_data.append({
                     'latitude': lat,
                     'longitude': lng,
@@ -38,80 +33,69 @@ if uploaded_file is not None:
     # Create a DataFrame for Pydeck
     df = pd.DataFrame(waypoints_data)
 
-    # Create a filter for the activity type
-    activity_options = df['activity'].unique().tolist()
-    selected_activity = st.selectbox("Select Activity Type", options=activity_options)
+    # Debugging: Display the first few rows of data
+    st.write(df.head())  # Check if the coordinates are being parsed correctly
 
-    # Filter the DataFrame based on selected activity
-    filtered_df = df[df['activity'] == selected_activity]
+    # Waypoint configuration options
+    waypoint_size = st.slider("Select Waypoint Size", min_value=50, max_value=1000, value=100)
+    waypoint_color = st.color_picker("Pick Waypoint Color", value='#FF0000')  # Default is red
 
-    # Calculate total distance and duration
-    if not filtered_df.empty:
-        total_distance = filtered_df['distance'].sum() / 1000  # Convert meters to kilometers
-        start_time = pd.to_datetime(filtered_df['start_time'].min())
-        end_time = pd.to_datetime(filtered_df['end_time'].max())
-        total_duration = (end_time - start_time).total_seconds() / 60  # Convert to minutes
-    else:
-        total_distance = 0
-        total_duration = 0
+    # Path configuration options
+    show_paths = st.checkbox("Show Paths", value=True)
+    path_width = st.slider("Select Path Width", min_value=1, max_value=20, value=3)
+    path_color = st.color_picker("Pick Path Color", value='#0000FF')  # Default is blue
 
-    # Display distance and duration
-    st.write(f"Total Distance: {total_distance:.2f} km")
-    st.write(f"Total Duration: {total_duration:.2f} minutes")
+    # Convert colors to RGB format for Pydeck
+    def hex_to_rgb(hex_color):
+        hex_color = hex_color.lstrip('#')
+        return [int(hex_color[i:i+2], 16) for i in (0, 2, 4)]
+
+    waypoint_rgb_color = hex_to_rgb(waypoint_color)
+    path_rgb_color = hex_to_rgb(path_color)
 
     # Set the initial view state for the map (centered on the first waypoint of filtered data)
-    initial_view_state = pdk.ViewState(
-        latitude=filtered_df['latitude'].mean(),
-        longitude=filtered_df['longitude'].mean(),
-        zoom=12,
-        pitch=0,
-    )
+    if not df.empty:
+        initial_view_state = pdk.ViewState(
+            latitude=df['latitude'].mean(),
+            longitude=df['longitude'].mean(),
+            zoom=12,  # Adjust zoom based on the spread of points
+            pitch=0,
+        )
 
-    # Add checkboxes for toggling layers
-    show_waypoints = st.checkbox("Show Waypoints", value=True)
-    show_paths = st.checkbox("Show Paths", value=True)
-
-    # Create layers based on checkboxes
-    layers = []
-
-    if show_waypoints:
+        # Scatter layer for waypoints
         scatter_layer = pdk.Layer(
             'ScatterplotLayer',
-            data=filtered_df,
+            data=df,
             get_position='[longitude, latitude]',
-            get_radius=100,
-            get_color=[255, 0, 0],
+            get_radius=waypoint_size,  # Customizable size
+            get_color=waypoint_rgb_color,  # Customizable color
             pickable=True,
         )
-        layers.append(scatter_layer)
 
-    if show_paths:
-        line_layer = pdk.Layer(
-            "LineLayer",
-            data=filtered_df,
-            get_source_position="[longitude, latitude]",
-            get_target_position="[longitude, latitude]",
-            get_color=[0, 0, 255],
-            get_width=3,
-        )
-        layers.append(line_layer)
+        layers = [scatter_layer]  # Start with waypoints
 
-    # Render the map with the selected activity and connected waypoints
-    st.pydeck_chart(pdk.Deck(
-        initial_view_state=initial_view_state,
-        layers=layers,
-        tooltip={"text": "Activity: {activity}\nLat: {latitude}\nLng: {longitude}"}
-    ))
+        if show_paths:
+            line_layer = pdk.Layer(
+                "LineLayer",
+                data=df,
+                get_source_position="[longitude, latitude]",
+                get_target_position="[longitude, latitude]",
+                get_color=path_rgb_color,  # Customizable color
+                get_width=path_width,  # Customizable width
+            )
+            layers.append(line_layer)
 
-    # Option to export filtered data
-    export_data = st.checkbox("Export Filtered Data")
-    if export_data:
-        st.download_button(label="Download CSV", data=filtered_df.to_csv(), file_name="filtered_data.csv", mime="text/csv")
+        # Render the map
+        st.pydeck_chart(pdk.Deck(
+            initial_view_state=initial_view_state,
+            layers=layers,
+            tooltip={"text": "Activity: {activity}\nLat: {latitude}\nLng: {longitude}"}
+        ))
+    else:
+        st.error("No waypoints available to display on the map.")
 
-    st.write(f"Displaying {len(filtered_df)} waypoints for activity: {selected_activity}")
 else:
     st.warning("Please upload a JSON file to proceed.")
-
 
 # import streamlit as st
 # from datetime import time, datetime
