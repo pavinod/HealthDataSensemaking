@@ -2,7 +2,6 @@ import streamlit as st
 import pydeck as pdk
 import pandas as pd
 import json
-import time
 
 # Always prompt the user to upload a JSON file
 uploaded_file = st.file_uploader("Please upload a JSON file to proceed", type=["json"])
@@ -13,6 +12,8 @@ if uploaded_file is not None:
 
     # Extract relevant waypoints, locations, and activity types from the JSON data
     timeline_data = []
+    all_waypoints = []
+    
     for obj in data['timelineObjects']:
         if 'activitySegment' in obj and 'waypointPath' in obj['activitySegment']:
             activity_type = obj['activitySegment'].get('activityType', 'Unknown')
@@ -24,36 +25,28 @@ if uploaded_file is not None:
             for waypoint in obj['activitySegment']['waypointPath']['waypoints']:
                 lat = waypoint['latE7'] / 1e7  # Convert to proper latitude
                 lng = waypoint['lngE7'] / 1e7  # Convert to proper longitude
-                waypoints.append([lng, lat])
+                waypoints.append([lng, lat])  # Add longitude and latitude to path list
+                all_waypoints.append({
+                    'latitude': lat,
+                    'longitude': lng,
+                    'activity': activity_type
+                })
 
             timeline_data.append({
                 'activity': activity_type,
                 'start_time': start_time,
                 'end_time': end_time,
-                'distance': distance,
+                'distance': distance / 1000,  # Convert to kilometers
                 'waypoints': waypoints
             })
 
-    # Sidebar: Option to scroll through timeline or play activities
-    st.sidebar.title("Timeline Control")
-    
-    # Assign a unique key to the slider to prevent duplicate widget ID error
-    activity_index = st.sidebar.slider("Select Activity", min_value=0, max_value=len(timeline_data) - 1, value=0, key="activity_slider")
-
-    # Add a play button to automatically move through activities with a unique key
-    play = st.sidebar.button("Play", key="play_button")
-
-    if play:
-        for i in range(len(timeline_data)):
-            st.sidebar.slider("Select Activity", min_value=0, max_value=len(timeline_data) - 1, value=i, key=f"slider_{i}")
-            time.sleep(1)  # Pause for 1 second between activities
-
-    # Get the current activity's waypoints and data
-    selected_activity = timeline_data[activity_index]
-    waypoints = selected_activity['waypoints']
+    # Display a table of all activities
+    st.write("### Activities Summary")
+    activity_df = pd.DataFrame(timeline_data)
+    st.dataframe(activity_df[['activity', 'start_time', 'end_time', 'distance']])
 
     # Waypoint and Path customization options
-    waypoint_size = st.slider("Select Waypoint Size", min_value=50, max_value=1000, value=100, key="waypoint_size")
+    waypoint_size = st.slider("Select Waypoint Size", min_value=0, max_value=100, value=20, key="waypoint_size")
     waypoint_color = st.color_picker("Pick Waypoint Color", value='#FF0000', key="waypoint_color")  # Default is red
     path_width = st.slider("Select Path Width", min_value=1, max_value=20, value=3, key="path_width")
     path_color = st.color_picker("Pick Path Color", value='#0000FF', key="path_color")  # Default is blue
@@ -66,10 +59,10 @@ if uploaded_file is not None:
     waypoint_rgb_color = hex_to_rgb(waypoint_color)
     path_rgb_color = hex_to_rgb(path_color)
 
-    # Create a DataFrame for the waypoints
-    waypoint_df = pd.DataFrame(waypoints, columns=['longitude', 'latitude'])
+    # Create a DataFrame for the waypoints and paths
+    waypoint_df = pd.DataFrame(all_waypoints)
 
-    # Set the initial view state for the map
+    # Set the initial view state for the map (centered on the waypoints)
     if not waypoint_df.empty:
         initial_view_state = pdk.ViewState(
             latitude=waypoint_df['latitude'].mean(),
@@ -89,30 +82,22 @@ if uploaded_file is not None:
         )
 
         # Line layer for paths
+        path_data = [{"path": activity['waypoints'], "name": activity['activity']} for activity in timeline_data]
         path_layer = pdk.Layer(
             "PathLayer",
-            data=[{
-                "path": waypoints,
-                "name": selected_activity['activity']
-            }],
+            data=path_data,
             get_path="path",
             get_width=path_width,  # Customizable width
             get_color=path_rgb_color,  # Customizable color
             width_min_pixels=path_width,
         )
 
-        # Render the map with the selected activity's waypoints and paths
+        # Render the map with waypoints and paths for all activities
         st.pydeck_chart(pdk.Deck(
             initial_view_state=initial_view_state,
             layers=[scatter_layer, path_layer],
-            tooltip={"text": "Activity: " + selected_activity['activity']}
+            tooltip={"text": "Activity: {activity}"}
         ))
-
-    # Display activity info
-    st.write(f"Activity: {selected_activity['activity']}")
-    st.write(f"Start Time: {selected_activity['start_time']}")
-    st.write(f"End Time: {selected_activity['end_time']}")
-    st.write(f"Distance: {selected_activity['distance'] / 1000:.2f} km")
 
 else:
     st.warning("Please upload a JSON file to proceed.")
