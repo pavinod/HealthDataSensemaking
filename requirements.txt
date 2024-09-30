@@ -1,2 +1,6 @@
 streamlit
 ydata_profiling
+geopy
+pandas
+pydeck
+streamlit
