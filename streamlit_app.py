@@ -2,6 +2,16 @@ import streamlit as st
 import pydeck as pdk
 import pandas as pd
 import json
+from datetime import datetime, timedelta
+
+# Convert the ISO timestamp into a pandas datetime object
+def parse_iso_timestamp(timestamp):
+    return pd.to_datetime(timestamp)
+
+# Filter activities by date range
+def filter_by_date_range(df, start_date, end_date):
+    df['start_time'] = pd.to_datetime(df['start_time'])
+    return df[(df['start_time'] >= start_date) & (df['start_time'] <= end_date)]
 
 # Always prompt the user to upload a JSON file
 uploaded_file = st.file_uploader("Please upload a JSON file to proceed", type=["json"])
@@ -17,9 +27,11 @@ if uploaded_file is not None:
     for obj in data['timelineObjects']:
         if 'activitySegment' in obj and 'waypointPath' in obj['activitySegment']:
             activity_type = obj['activitySegment'].get('activityType', 'Unknown')
-            start_time = obj['activitySegment']['duration']['startTimestamp']
-            end_time = obj['activitySegment']['duration']['endTimestamp']
+            start_time = parse_iso_timestamp(obj['activitySegment']['duration']['startTimestamp'])
+            end_time = parse_iso_timestamp(obj['activitySegment']['duration']['endTimestamp'])
+            duration = (end_time - start_time).total_seconds() / 60  # Duration in minutes
             distance = obj['activitySegment']['distance'] if 'distance' in obj['activitySegment'] else 0
+            average_speed = (distance / 1000) / (duration / 60)  # Speed in km/h
 
             waypoints = []
             for waypoint in obj['activitySegment']['waypointPath']['waypoints']:
@@ -36,14 +48,38 @@ if uploaded_file is not None:
                 'activity': activity_type,
                 'start_time': start_time,
                 'end_time': end_time,
+                'duration': duration,
                 'distance': distance / 1000,  # Convert to kilometers
+                'average_speed': average_speed,  # km/h
                 'waypoints': waypoints
             })
 
-    # Display a table of all activities
-    st.write("### Activities Summary")
+    # Convert timeline data into a DataFrame
     activity_df = pd.DataFrame(timeline_data)
-    st.dataframe(activity_df[['activity', 'start_time', 'end_time', 'distance']])
+
+    # Filters: Time frame (default 1 week), activity type
+    st.sidebar.header("Filters")
+
+    # Date range filter
+    default_start_date = datetime.now() - timedelta(days=7)
+    start_date = st.sidebar.date_input("Start Date", default_start_date)
+    end_date = st.sidebar.date_input("End Date", datetime.now())
+
+    # Filter by activity type
+    activity_types = activity_df['activity'].unique().tolist()
+    selected_activity_types = st.sidebar.multiselect("Filter by Activity Type", options=activity_types, default=activity_types)
+
+    # Apply the filters
+    filtered_df = filter_by_date_range(activity_df, start_date, end_date)
+    filtered_df = filtered_df[filtered_df['activity'].isin(selected_activity_types)]
+
+    # Display filtered data in a table
+    st.write("### Filtered Activities Summary")
+    st.dataframe(filtered_df[['activity', 'start_time', 'end_time', 'distance', 'average_speed', 'duration']])
+
+    # Overview of total distance
+    total_distance = filtered_df['distance'].sum()
+    st.write(f"**Total Distance:** {total_distance:.2f} km")
 
     # Waypoint and Path customization options
     waypoint_size = st.slider("Select Waypoint Size", min_value=0, max_value=100, value=20, key="waypoint_size")
@@ -59,15 +95,22 @@ if uploaded_file is not None:
     waypoint_rgb_color = hex_to_rgb(waypoint_color)
     path_rgb_color = hex_to_rgb(path_color)
 
-    # Create a DataFrame for the waypoints and paths
+    # Create a DataFrame for the waypoints
+    all_waypoints = []
+    path_data = []
+    for index, row in filtered_df.iterrows():
+        for waypoint in row['waypoints']:
+            all_waypoints.append({'latitude': waypoint[1], 'longitude': waypoint[0], 'activity': row['activity']})
+        path_data.append({"path": row['waypoints'], "name": row['activity']})
+
     waypoint_df = pd.DataFrame(all_waypoints)
 
-    # Set the initial view state for the map (centered on the waypoints)
+    # Map display
     if not waypoint_df.empty:
         initial_view_state = pdk.ViewState(
             latitude=waypoint_df['latitude'].mean(),
             longitude=waypoint_df['longitude'].mean(),
-            zoom=12,  # Adjust zoom based on the spread of points
+            zoom=12,
             pitch=0,
         )
 
@@ -82,7 +125,6 @@ if uploaded_file is not None:
         )
 
         # Line layer for paths
-        path_data = [{"path": activity['waypoints'], "name": activity['activity']} for activity in timeline_data]
         path_layer = pdk.Layer(
             "PathLayer",
             data=path_data,
@@ -92,7 +134,7 @@ if uploaded_file is not None:
             width_min_pixels=path_width,
         )
 
-        # Render the map with waypoints and paths for all activities
+        # Render the map with waypoints and paths
         st.pydeck_chart(pdk.Deck(
             initial_view_state=initial_view_state,
             layers=[scatter_layer, path_layer],
