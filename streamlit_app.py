@@ -3,115 +3,116 @@ import pydeck as pdk
 import pandas as pd
 import json
 from geopy.distance import geodesic
+import streamlit as st
+import pydeck as pdk
+import pandas as pd
+import json
 
-# Option to load new file or use existing data
-use_uploaded_file = st.checkbox("Upload a new file", value=False)
+# Always prompt the user to upload a JSON file
+uploaded_file = st.file_uploader("Please upload a JSON file to proceed", type=["json"])
 
-# Load JSON file based on user choice
-if use_uploaded_file:
-    uploaded_file = st.file_uploader("Upload JSON file", type=["json"])
-    if uploaded_file is not None:
-        data = json.load(uploaded_file)
-else:
-    # Fallback to a default file
-    with open('2023_APRIL.json') as f:
-        data = json.load(f)
+if uploaded_file is not None:
+    # Reading the file once it's uploaded
+    data = json.load(uploaded_file)
 
-        
-# Extracting relevant waypoints, locations, and activity types from the JSON data
-waypoints_data = []
-for obj in data['timelineObjects']:
-    if 'activitySegment' in obj and 'waypointPath' in obj['activitySegment']:
-        activity_type = obj['activitySegment'].get('activityType', 'Unknown')
-        start_time = obj['activitySegment']['duration']['startTimestamp']
-        end_time = obj['activitySegment']['duration']['endTimestamp']
-        distance = obj['activitySegment']['distance'] if 'distance' in obj['activitySegment'] else 0
-        for waypoint in obj['activitySegment']['waypointPath']['waypoints']:
-            lat = waypoint['latE7'] / 1e7
-            lng = waypoint['lngE7'] / 1e7
-            waypoints_data.append({
-                'latitude': lat,
-                'longitude': lng,
-                'activity': activity_type,
-                'start_time': start_time,
-                'end_time': end_time,
-                'distance': distance
-            })
+    # Extracting relevant waypoints, locations, and activity types from the JSON data
+    waypoints_data = []
+    for obj in data['timelineObjects']:
+        if 'activitySegment' in obj and 'waypointPath' in obj['activitySegment']:
+            activity_type = obj['activitySegment'].get('activityType', 'Unknown')
+            start_time = obj['activitySegment']['duration']['startTimestamp']
+            end_time = obj['activitySegment']['duration']['endTimestamp']
+            distance = obj['activitySegment']['distance'] if 'distance' in obj['activitySegment'] else 0
+            for waypoint in obj['activitySegment']['waypointPath']['waypoints']:
+                lat = waypoint['latE7'] / 1e7
+                lng = waypoint['lngE7'] / 1e7
+                waypoints_data.append({
+                    'latitude': lat,
+                    'longitude': lng,
+                    'activity': activity_type,
+                    'start_time': start_time,
+                    'end_time': end_time,
+                    'distance': distance
+                })
 
-# Create a DataFrame for Pydeck
-df = pd.DataFrame(waypoints_data)
+    # Create a DataFrame for Pydeck
+    df = pd.DataFrame(waypoints_data)
 
-# Create a filter for the activity type
-activity_options = df['activity'].unique().tolist()
-selected_activity = st.selectbox("Select Activity Type", options=activity_options)
+    # Create a filter for the activity type
+    activity_options = df['activity'].unique().tolist()
+    selected_activity = st.selectbox("Select Activity Type", options=activity_options)
 
-# Filter the DataFrame based on selected activity
-filtered_df = df[df['activity'] == selected_activity]
+    # Filter the DataFrame based on selected activity
+    filtered_df = df[df['activity'] == selected_activity]
 
-# Calculate total distance and duration
-if not filtered_df.empty:
-    total_distance = filtered_df['distance'].sum() / 1000  # Convert meters to kilometers
-    start_time = pd.to_datetime(filtered_df['start_time'].min())
-    end_time = pd.to_datetime(filtered_df['end_time'].max())
-    total_duration = (end_time - start_time).total_seconds() / 60  # Convert to minutes
-else:
-    total_distance = 0
-    total_duration = 0
+    # Calculate total distance and duration
+    if not filtered_df.empty:
+        total_distance = filtered_df['distance'].sum() / 1000  # Convert meters to kilometers
+        start_time = pd.to_datetime(filtered_df['start_time'].min())
+        end_time = pd.to_datetime(filtered_df['end_time'].max())
+        total_duration = (end_time - start_time).total_seconds() / 60  # Convert to minutes
+    else:
+        total_distance = 0
+        total_duration = 0
 
-# Display distance and duration
-st.write(f"Total Distance: {total_distance:.2f} km")
-st.write(f"Total Duration: {total_duration:.2f} minutes")
+    # Display distance and duration
+    st.write(f"Total Distance: {total_distance:.2f} km")
+    st.write(f"Total Duration: {total_duration:.2f} minutes")
 
-# Set the initial view state for the map (centered on the first waypoint of filtered data)
-initial_view_state = pdk.ViewState(
-    latitude=filtered_df['latitude'].mean(),
-    longitude=filtered_df['longitude'].mean(),
-    zoom=12,
-    pitch=0,
-)
-
-# Add checkboxes for toggling layers
-show_waypoints = st.checkbox("Show Waypoints", value=True)
-show_paths = st.checkbox("Show Paths", value=True)
-
-# Create layers based on checkboxes
-layers = []
-
-if show_waypoints:
-    scatter_layer = pdk.Layer(
-        'ScatterplotLayer',
-        data=filtered_df,
-        get_position='[longitude, latitude]',
-        get_radius=100,
-        get_color=[255, 0, 0],
-        pickable=True,
+    # Set the initial view state for the map (centered on the first waypoint of filtered data)
+    initial_view_state = pdk.ViewState(
+        latitude=filtered_df['latitude'].mean(),
+        longitude=filtered_df['longitude'].mean(),
+        zoom=12,
+        pitch=0,
     )
-    layers.append(scatter_layer)
 
-if show_paths:
-    line_layer = pdk.Layer(
-        "LineLayer",
-        data=filtered_df,
-        get_source_position="[longitude, latitude]",
-        get_target_position="[longitude, latitude]",
-        get_color=[0, 0, 255],
-        get_width=3,
-    )
-    layers.append(line_layer)
+    # Add checkboxes for toggling layers
+    show_waypoints = st.checkbox("Show Waypoints", value=True)
+    show_paths = st.checkbox("Show Paths", value=True)
 
-# Render the map with the selected activity and connected waypoints
-st.pydeck_chart(pdk.Deck(
-    initial_view_state=initial_view_state,
-    layers=layers,
-    tooltip={"text": "Activity: {activity}\nLat: {latitude}\nLng: {longitude}"}
-))
+    # Create layers based on checkboxes
+    layers = []
 
-# Option to export filtered data
-export_data = st.checkbox("Export Filtered Data")
-if export_data:
-    st.download_button(label="Download CSV", data=filtered_df.to_csv(), file_name="filtered_data.csv", mime="text/csv")
+    if show_waypoints:
+        scatter_layer = pdk.Layer(
+            'ScatterplotLayer',
+            data=filtered_df,
+            get_position='[longitude, latitude]',
+            get_radius=100,
+            get_color=[255, 0, 0],
+            pickable=True,
+        )
+        layers.append(scatter_layer)
 
-st.write(f"Displaying {len(filtered_df)} waypoints for activity: {selected_activity}")
+    if show_paths:
+        line_layer = pdk.Layer(
+            "LineLayer",
+            data=filtered_df,
+            get_source_position="[longitude, latitude]",
+            get_target_position="[longitude, latitude]",
+            get_color=[0, 0, 255],
+            get_width=3,
+        )
+        layers.append(line_layer)
+
+    # Render the map with the selected activity and connected waypoints
+    st.pydeck_chart(pdk.Deck(
+        initial_view_state=initial_view_state,
+        layers=layers,
+        tooltip={"text": "Activity: {activity}\nLat: {latitude}\nLng: {longitude}"}
+    ))
+
+    # Option to export filtered data
+    export_data = st.checkbox("Export Filtered Data")
+    if export_data:
+        st.download_button(label="Download CSV", data=filtered_df.to_csv(), file_name="filtered_data.csv", mime="text/csv")
+
+    st.write(f"Displaying {len(filtered_df)} waypoints for activity: {selected_activity}")
+else:
+    st.warning("Please upload a JSON file to proceed.")
+
+
 # import streamlit as st
 # from datetime import time, datetime
 # import pandas as pd
