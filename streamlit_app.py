@@ -36,12 +36,16 @@ if uploaded_file is not None:
 
     # Sidebar: Option to scroll through timeline or play activities
     st.sidebar.title("Timeline Control")
-    activity_index = st.sidebar.slider("Select Activity", min_value=0, max_value=len(timeline_data) - 1, value=0)
+    
+    # Assign a unique key to the slider to prevent duplicate widget ID error
+    activity_index = st.sidebar.slider("Select Activity", min_value=0, max_value=len(timeline_data) - 1, value=0, key="activity_slider")
 
-    # Add a play button to automatically move through activities
-    if st.sidebar.button("Play"):
+    # Add a play button to automatically move through activities with a unique key
+    play = st.sidebar.button("Play", key="play_button")
+
+    if play:
         for i in range(len(timeline_data)):
-            st.sidebar.slider("Select Activity", min_value=0, max_value=len(timeline_data) - 1, value=i)
+            st.sidebar.slider("Select Activity", min_value=0, max_value=len(timeline_data) - 1, value=i, key=f"slider_{i}")
             time.sleep(1)  # Pause for 1 second between activities
 
     # Get the current activity's waypoints and data
@@ -49,10 +53,10 @@ if uploaded_file is not None:
     waypoints = selected_activity['waypoints']
 
     # Waypoint and Path customization options
-    waypoint_size = st.slider("Select Waypoint Size", min_value=50, max_value=1000, value=100)
-    waypoint_color = st.color_picker("Pick Waypoint Color", value='#FF0000')  # Default is red
-    path_width = st.slider("Select Path Width", min_value=1, max_value=20, value=3)
-    path_color = st.color_picker("Pick Path Color", value='#0000FF')  # Default is blue
+    waypoint_size = st.slider("Select Waypoint Size", min_value=50, max_value=1000, value=100, key="waypoint_size")
+    waypoint_color = st.color_picker("Pick Waypoint Color", value='#FF0000', key="waypoint_color")  # Default is red
+    path_width = st.slider("Select Path Width", min_value=1, max_value=20, value=3, key="path_width")
+    path_color = st.color_picker("Pick Path Color", value='#0000FF', key="path_color")  # Default is blue
 
     # Convert colors to RGB format for Pydeck
     def hex_to_rgb(hex_color):
