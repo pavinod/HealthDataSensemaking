@@ -5,7 +5,7 @@ import json
 from datetime import datetime, timedelta
 
 st.set_page_config(page_title="Google Maps Timeline Analyzer", page_icon=":material/map:", layout="centered", initial_sidebar_state="auto", menu_items=None)
-use_satellite = st.checkbox("Use Satellite View", value=False)
+
 # Convert the ISO timestamp into a pandas datetime object
 def parse_iso_timestamp(timestamp):
     return pd.to_datetime(timestamp)
@@ -67,12 +67,12 @@ if uploaded_file is not None:
                 })
 
             timeline_data.append({
-                'Activity': activity_type,
-                'Start time': start_time,
-                'End time': end_time,
-                'Duration (minutes)': duration,
-                'Distance (km)': round((distance / 1000),2),  # Convert to kilometers
-                'Average Speed (km/h)': round((average_speed),2),  # km/h
+                'activity': activity_type,
+                'start_time': start_time,
+                'end_time': end_time,
+                'duration': duration,
+                'distance': round((distance / 1000),2),  # Convert to kilometers
+                'average_speed': round((average_speed),2),  # km/h
                 'waypoints': waypoints
             })
 
@@ -159,7 +159,8 @@ if uploaded_file is not None:
             get_color=path_rgb_color,  # Customizable color
             width_min_pixels=path_width,
         )
-        
+
+        use_satellite = st.checkbox("Use Satellite View", value=False)
         # Use satellite view if selected
         map_style = "mapbox://styles/mapbox/satellite-v9" if use_satellite else "mapbox://styles/mapbox/streets-v11"
         
