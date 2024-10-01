@@ -167,4 +167,5 @@ else:
 
 # Add a disclaimer at the bottom of the page
 st.markdown("---")
-st.markdown("**Disclaimer:** Developed by Pavithren V S Pakianathan. Please be advised that the information within this service is provided without liability.")
+st.markdown("**Disclaimer:**Please be advised that the information within this service is provided without liability.")
+st.markdown("**Developed by [Pavithren V S Pakianathan](https://www.pavithren.com)**")
