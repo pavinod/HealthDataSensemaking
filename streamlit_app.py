@@ -12,16 +12,17 @@ def parse_iso_timestamp(timestamp):
 def filter_by_date_range(df, start_date, end_date):
     """Filter DataFrame by date range."""
     # Ensure 'start_time' column is in datetime format
-    if df['start_time'].dtype != 'datetime64[ns]':
-        df['start_time'] = pd.to_datetime(df['start_time'])
+    df['start_time'] = pd.to_datetime(df['start_time'], errors='coerce')
 
-    # Convert start_date and end_date to datetime objects if needed
-    if isinstance(start_date, datetime):
-        start_date = pd.to_datetime(start_date)
-    if isinstance(end_date, datetime):
-        end_date = pd.to_datetime(end_date)
+    # Ensure start_date and end_date are datetime objects
+    start_date = pd.to_datetime(start_date)
+    end_date = pd.to_datetime(end_date)
 
-    # Apply the date filter
+    # Debugging: Check types of start_date, end_date, and 'start_time'
+    print(f"start_date type: {type(start_date)}, end_date type: {type(end_date)}")
+    print(f"'start_time' column type: {df['start_time'].dtype}")
+
+    # Filter rows where 'start_time' falls within the start_date and end_date
     return df[(df['start_time'] >= start_date) & (df['start_time'] <= end_date)]
 
 # Always prompt the user to upload a JSON file
