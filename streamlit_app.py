@@ -71,8 +71,8 @@ if uploaded_file is not None:
                 'Start time': start_time,
                 'End time': end_time,
                 'Duration (minutes)': duration,
-                'Distance (km)': (distance / 1000).round(2),  # Convert to kilometers
-                'Average Speed (km/h)': average_speed.round(2),  # km/h
+                'Distance (km)': round((distance / 1000),2),  # Convert to kilometers
+                'Average Speed (km/h)': round((average_speed),2),  # km/h
                 'waypoints': waypoints
             })
 
