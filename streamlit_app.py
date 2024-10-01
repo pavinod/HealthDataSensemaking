@@ -12,14 +12,14 @@ def parse_iso_timestamp(timestamp):
 def filter_by_date_range(df, start_date, end_date):
     """Filter DataFrame by date range."""
     
-    # Ensure 'start_time' column is in datetime format
-    df['start_time'] = pd.to_datetime(df['start_time'], errors='coerce')  # Convert invalid entries to NaT
+    # Remove timezone from 'start_time' to make it timezone-naive
+    df['start_time'] = pd.to_datetime(df['start_time'], errors='coerce').dt.tz_convert(None)
 
-    # Ensure start_date and end_date are datetime objects
+    # Ensure start_date and end_date are timezone-naive as well
     start_date = pd.to_datetime(start_date)
     end_date = pd.to_datetime(end_date)
 
-    # Debugging: Check the data types to ensure they're all datetime
+    # Debugging: Check types to ensure they're all timezone-naive
     st.write(f"Start date type: {type(start_date)}")
     st.write(f"End date type: {type(end_date)}")
     st.write(f"'start_time' column dtype: {df['start_time'].dtype}")
