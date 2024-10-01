@@ -11,19 +11,24 @@ def parse_iso_timestamp(timestamp):
 # Filter activities by date range
 def filter_by_date_range(df, start_date, end_date):
     """Filter DataFrame by date range."""
+    
     # Ensure 'start_time' column is in datetime format
-    df['start_time'] = pd.to_datetime(df['start_time'], errors='coerce')
+    df['start_time'] = pd.to_datetime(df['start_time'], errors='coerce')  # Convert invalid entries to NaT
 
     # Ensure start_date and end_date are datetime objects
     start_date = pd.to_datetime(start_date)
     end_date = pd.to_datetime(end_date)
 
-    # Debugging: Check types of start_date, end_date, and 'start_time'
-    print(f"start_date type: {type(start_date)}, end_date type: {type(end_date)}")
-    print(f"'start_time' column type: {df['start_time'].dtype}")
+    # Debugging: Check the data types to ensure they're all datetime
+    st.write(f"Start date type: {type(start_date)}")
+    st.write(f"End date type: {type(end_date)}")
+    st.write(f"'start_time' column dtype: {df['start_time'].dtype}")
 
     # Filter rows where 'start_time' falls within the start_date and end_date
-    return df[(df['start_time'] >= start_date) & (df['start_time'] <= end_date)]
+    mask = (df['start_time'] >= start_date) & (df['start_time'] <= end_date)
+
+    # Return the filtered DataFrame, dropping NaT rows
+    return df[mask].dropna(subset=['start_time'])
 
 # Always prompt the user to upload a JSON file
 uploaded_file = st.file_uploader("Please upload a JSON file to proceed", type=["json"])
