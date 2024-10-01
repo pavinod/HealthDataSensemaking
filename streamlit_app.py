@@ -5,7 +5,7 @@ import json
 from datetime import datetime, timedelta
 
 st.set_page_config(page_title="Google Maps Timeline Analyzer", page_icon=":material/map:", layout="centered", initial_sidebar_state="auto", menu_items=None)
-
+use_satellite = st.checkbox("Use Satellite View", value=False)
 # Convert the ISO timestamp into a pandas datetime object
 def parse_iso_timestamp(timestamp):
     return pd.to_datetime(timestamp)
@@ -32,11 +32,11 @@ def filter_by_date_range(df, start_date, end_date):
     # Return the filtered DataFrame, dropping NaT rows
     return df[mask].dropna(subset=['start_time'])
 
-# Always prompt the user to upload a JSON file
-uploaded_file = st.file_uploader("Please upload a JSON file to proceed", type=["json"])
-
 # Header text for the page
 st.header("_Google Maps_ timeline analyzer")
+
+# Always prompt the user to upload a JSON file
+uploaded_file = st.file_uploader("Please upload a JSON file to proceed", type=["json"])
 
 if uploaded_file is not None:
     # Reading the file once it's uploaded
@@ -67,12 +67,12 @@ if uploaded_file is not None:
                 })
 
             timeline_data.append({
-                'activity': activity_type,
-                'start_time': start_time,
-                'end_time': end_time,
-                'duration': duration,
-                'distance': distance / 1000,  # Convert to kilometers
-                'average_speed': average_speed,  # km/h
+                'Activity': activity_type,
+                'Start time': start_time,
+                'End time': end_time,
+                'Duration (minutes)': duration,
+                'Distance (km)': (distance / 1000).round(2),  # Convert to kilometers
+                'Average Speed (km/h)': average_speed.round(2),  # km/h
                 'waypoints': waypoints
             })
 
@@ -139,7 +139,7 @@ if uploaded_file is not None:
             zoom=12,
             pitch=0,
         )
-
+    
         # Scatter layer for waypoints
         scatter_layer = pdk.Layer(
             'ScatterplotLayer',
@@ -159,11 +159,15 @@ if uploaded_file is not None:
             get_color=path_rgb_color,  # Customizable color
             width_min_pixels=path_width,
         )
-
+        
+        # Use satellite view if selected
+        map_style = "mapbox://styles/mapbox/satellite-v9" if use_satellite else "mapbox://styles/mapbox/streets-v11"
+        
         # Render the map with waypoints and paths
         st.pydeck_chart(pdk.Deck(
             initial_view_state=initial_view_state,
             layers=[scatter_layer, path_layer],
+            map_style=map_style,  # Switch between satellite and street view
             tooltip={"text": "Activity: {activity}"}
         ))
 
