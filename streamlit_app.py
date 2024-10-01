@@ -19,10 +19,10 @@ def filter_by_date_range(df, start_date, end_date):
     start_date = pd.to_datetime(start_date)
     end_date = pd.to_datetime(end_date)
 
-    # Debugging: Check types to ensure they're all timezone-naive
-    st.write(f"Start date type: {type(start_date)}")
-    st.write(f"End date type: {type(end_date)}")
-    st.write(f"'start_time' column dtype: {df['start_time'].dtype}")
+    # # Debugging: Check types to ensure they're all timezone-naive
+    # st.write(f"Start date type: {type(start_date)}")
+    # st.write(f"End date type: {type(end_date)}")
+    # st.write(f"'start_time' column dtype: {df['start_time'].dtype}")
 
     # Filter rows where 'start_time' falls within the start_date and end_date
     mask = (df['start_time'] >= start_date) & (df['start_time'] <= end_date)
@@ -77,10 +77,14 @@ if uploaded_file is not None:
     # Filters: Time frame (default 1 week), activity type
     st.sidebar.header("Filters")
 
+    # Get the min and max date from 'start_time'
+    min_date = activity_df['start_time'].min().date()  # Get the earliest date in the dataset
+    max_date = activity_df['start_time'].max().date()  # Get the latest date in the dataset
+
     # Date range filter
-    default_start_date = datetime.now() - timedelta(days=7)
-    start_date = st.sidebar.date_input("Start Date", default_start_date)
-    end_date = st.sidebar.date_input("End Date", datetime.now())
+    # Restrict the date inputs to the file's time range
+    start_date = st.sidebar.date_input("Start Date", min_value=min_date, max_value=max_date, value=min_date)
+    end_date = st.sidebar.date_input("End Date", min_value=min_date, max_value=max_date, value=max_date)
 
     # Filter by activity type
     activity_types = activity_df['activity'].unique().tolist()
