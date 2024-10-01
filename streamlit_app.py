@@ -10,7 +10,18 @@ def parse_iso_timestamp(timestamp):
 
 # Filter activities by date range
 def filter_by_date_range(df, start_date, end_date):
-    df['start_time'] = pd.to_datetime(df['start_time'])
+    """Filter DataFrame by date range."""
+    # Ensure 'start_time' column is in datetime format
+    if df['start_time'].dtype != 'datetime64[ns]':
+        df['start_time'] = pd.to_datetime(df['start_time'])
+
+    # Convert start_date and end_date to datetime objects if needed
+    if isinstance(start_date, datetime):
+        start_date = pd.to_datetime(start_date)
+    if isinstance(end_date, datetime):
+        end_date = pd.to_datetime(end_date)
+
+    # Apply the date filter
     return df[(df['start_time'] >= start_date) & (df['start_time'] <= end_date)]
 
 # Always prompt the user to upload a JSON file
