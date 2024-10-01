@@ -33,6 +33,23 @@ def filter_by_date_range(df, start_date, end_date):
 # Always prompt the user to upload a JSON file
 uploaded_file = st.file_uploader("Please upload a JSON file to proceed", type=["json"])
 
+# Header text for the page
+st.header("_Google Maps_ timeline analyzer")
+
+# Setup configuration for the page
+
+st.set_page_config(
+    page_title="Google Maps Timeline Analyser",
+    page_icon="",
+    layout="wide",
+    initial_sidebar_state="expanded"
+    # menu_items={
+    #     'Get Help': 'https://www.extremelycoolapp.com/help',
+    #     'Report a bug': "https://www.extremelycoolapp.com/bug",
+    #     'About': ""
+    # }
+)
+
 if uploaded_file is not None:
     # Reading the file once it's uploaded
     data = json.load(uploaded_file)
