@@ -4,6 +4,8 @@ import pandas as pd
 import json
 from datetime import datetime, timedelta
 
+st.set_page_config(page_title="Google Maps Timeline Analyzer", page_icon=":material/map:", layout="centered", initial_sidebar_state="auto", menu_items=None)
+
 # Convert the ISO timestamp into a pandas datetime object
 def parse_iso_timestamp(timestamp):
     return pd.to_datetime(timestamp)
@@ -29,8 +31,6 @@ def filter_by_date_range(df, start_date, end_date):
 
     # Return the filtered DataFrame, dropping NaT rows
     return df[mask].dropna(subset=['start_time'])
-
-st.set_page_config(page_title="Google Maps Timeline Analyzer", page_icon=":material/map:", layout="centered", initial_sidebar_state="auto", menu_items=None)
 
 # Always prompt the user to upload a JSON file
 uploaded_file = st.file_uploader("Please upload a JSON file to proceed", type=["json"])
